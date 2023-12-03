@@ -10,7 +10,7 @@ class Author extends Model
     use HasFactory;
 
     protected $table = 'authors';
-    protected $fillable = ['full_name', 'birth_date', 'country'];
+    protected $fillable = ['full_name','birth_date', 'country'];
 
     public function profile(){
         return $this->hasOne(Profile::class);
@@ -26,5 +26,9 @@ class Author extends Model
 
     public function note(){
         return $this->morphMany(Note::class, 'noteable');
+    }
+
+    public function users(){
+        return $this->morphToMany(User::class, 'userable');
     }
 }
