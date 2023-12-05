@@ -2,59 +2,77 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use Illuminate\Http\RedirectResponse;
+use App\Models\Profile;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\View\View;
+use App\Models\Author;
 
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Display a listing of the resource.
      */
-    public function edit(Request $request): View
+    public function index()
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
-        ]);
+        //
     }
 
     /**
-     * Update the user's profile information.
+     * Store a newly created resource in storage.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function store(Request $request)
     {
-        $request->user()->fill($request->validated());
-
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $validated = $request->validate([
+            'career' => 'required|max:75',
+            'website' => 'max:75',
+            'email' => 'email|max:75',
+            'author.id' => 'required|integer|exists:authors,id',
+        ]);
+        try {
+            $profile = new Profile();
+            $profile->career = $request->career;
+            $profile->biography = $request->biography;
+            $profile->website = $request->website;
+            $profile->email = $request->email;
+            $profile->author_id = $request->author['id'];
+            $profile->save();
+            return response()->json(['status' => true, 'message' => 'El perfil del autor ' . $request->author['full_name'] . ' fue creado exitosamente' ]);
+        } catch (\Exception $exc){
+            return response()->json(['status' => false, 'message' => 'Error al crear el registro' . $exc]);
         }
-
-        $request->user()->save();
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**
-     * Delete the user's account.
+     * Display the specified resource.
      */
-    public function destroy(Request $request): RedirectResponse
+    public function show(string $id)
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
+        
+    }
 
-        $user = $request->user();
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        try {
+            $profile = Profile::findOrFail($id);
+            $profile->career = $request->career;
+            $profile->biography = $request->biography;
+            $profile->website = $request->website;
+            $profile->email = $request->email;
+            $profile->author_id = $request->author['id'];
+            $profile->save();
+            return response()->json(['status' => true, 'message' => 'El perfil del autor ' . $request->author['full_name'] . ' fue actualizado exitosamente' ]);
+            } catch (\Exception $exc){
+            return response()->json(['status' => false, 'message' => 'Error al editar el registro']);
+            }
+    }
 
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return Redirect::to('/');
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        //
     }
 }
