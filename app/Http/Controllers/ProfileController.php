@@ -54,6 +54,12 @@ class ProfileController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $validated = $request->validate([
+            'career' => 'required|max:75',
+            'website' => 'max:75',
+            'email' => 'email|max:75',
+            'author.id' => 'required|integer|exists:authors,id',
+        ]);
         try {
             $profile = Profile::findOrFail($id);
             $profile->career = $request->career;

@@ -13,7 +13,14 @@ class AuthorController extends Controller
      */
     public function index()
     {
+
         $authors = Author::orderBy('full_name', 'asc')->get();
+
+        $count = 0;
+        foreach ($authors as $author) {
+        $authors[$count]->ratings = $author->users()->select('userables.*')->get();
+        $count++;
+}
         return response()->json($authors);
     }
 
@@ -22,6 +29,12 @@ class AuthorController extends Controller
      */
     public function store(Request $request)
     {
+        $validated = $request->validate([
+            'full_name' => 'required|max:75',
+            'birth_date' => 'date|date_format:Y-m-d',
+            'country' => 'max:75',
+            'image' => 'nullable|sometimes|image',
+        ]);
         try {
             $author = new Author();
             $author->full_name = $request->full_name;
@@ -58,6 +71,12 @@ class AuthorController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $validated = $request->validate([
+            'full_name' => 'required|max:75',
+            'birth_date' => 'date|date_format:Y-m-d',
+            'country' => 'max:75',
+            'image' => 'nullable|sometimes|image',
+        ]);
         $validated = $request->validate([
             'full_name' => 'required|max:75',
             'birth_date' => 'date|date_format:Y-m-d',
